@@ -23,7 +23,6 @@ result_image = "result.png"
 reconstructer = OpenCV::CvMat.load(a_image)
 # read target image
 rough = OpenCV::CvMat.load(b_image)
-# main
 if reconstructer.isValidAndSmallerThan rough
   # search b-coodinates
   place = reconstructer.placesAt rough
