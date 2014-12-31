@@ -12,7 +12,7 @@ require "opencv"
 a_image = "paintLittle.jpg"
 b_image = "paintBig.jpg"
 d_image = "paintLittle-th.jpg"
-result_image = "" or "result.png"
+result_image = "result.png"
 
 # -------------------------------------
 #  拡張
@@ -104,6 +104,7 @@ class OpenCV::CvMat
       p "a 画像と同じ大きさの d 画像を指定してください。"
       return false
     end
+  end
 end
 
 # -------------------------------------
