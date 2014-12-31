@@ -35,49 +35,40 @@ class OpenCV::CvMat
     [blue, green, red] == [255.0, 255.0, 255.0]
   end
   # isValidAndSmallerThan かどうか判定する。
-  def isValidAndSmallerThan(b)
-    reWidth = self.width
-    reHeight = self.height
-    roWidth = b.width
-    roHeight = b.height
-    unless reHeight or roHeight or reWidth or roWidth
-      p "まともな画像じゃないんでだめ。"
+  def isValidAndSmallerThan(image)
+    a = self
+    b = image
+
+    unless a.height or b.height or a.width or b.width
+      p "a, b に妥当な画像を指定してください。"
       return false
     end
-    if reHeight > roHeight and reWidth > roWidth
-      p "なんでターゲットが小さいんだよ！"
+    if a.height > b.height and a.width > b.width
+      p "大きな b 画像を指定してください。"
       return false
     end
-    if (reWidth - roWidth) * (reHeight - roHeight) < 0
-      p "ターゲットを十分に大きな画像にしてください。"
+    if (a.width - b.width) * (a.height - b.height) < 0
+      p "十分に大きな b 画像を指定してください。"
       return false
     end
     return true
   end
-  # 対象画像において、ある位置からピクセル単位で探索し、誤差の和と開始位置を含めたハッシュを返す。
-  def evaluateDegreeOfSimilarity(bigImage, x, y)
+  def getDegreeOfDiff(image)
     a = self
-    b = bigImage
+    b = image
 
     error = 0
-    counter = 0
 
-    for dx in 1..(a.width)
-      for dy in 1..(a.height)
-        error += (a.getRGB(dx, dy)[:blue] - b.getRGB(x + dx, y + dy)[:blue]).abs
-        counter += 1
+    for x in 1..(a.width)
+      for y in 1..(a.height)
+        error += (a.getRGB(x, y)[:green] - b.getRGB(x, y)[:green]).abs ** 2
       end
     end
 
-    result = {
-      x: x,
-      y: y,
-      diff: error / counter
-    }
+    return error
   end
   # 画像がどの位置に存在していそうかを計算する。
   def placesAt(bigImage)
-
     a = self
     b = bigImage
 
@@ -87,7 +78,13 @@ class OpenCV::CvMat
     results = []
     for x in 0...searchWidth
       for y in 0...searchHeight
-        results.push a.evaluateDegreeOfSimilarity(b, x, y)
+        target = b.sub_rect x, y, a.width, a.height
+        diff = a.getDegreeOfDiff target
+        results.push result = {
+          x: x,
+          y: y,
+          diff: diff
+        }
       end
     end
     results.min_by do |result|
@@ -126,5 +123,6 @@ if reconstructer.isValidAndSmallerThan rough
     clipped = rough.sub_rect place[:x], place[:y], reconstructer.width, reconstructer.height
     view = preboundary.add clipped
     view.save_image result_image
+    puts "result image has been saved at #{result_image}"
   end
 end
