@@ -88,4 +88,56 @@ class OpenCV::CvMat
       return false
     end
   end
+  def calcMSE_color(theSameSizeImage)
+    a = self
+    b = theSameSizeImage
+
+    mse = 0
+    for x in 1..(a.width)
+      for y in 1..(a.height)
+        dr = a.getRGB(x, y)[:red] - b.getRGB(x, y)[:red]
+        db = a.getRGB(x, y)[:blue] - b.getRGB(x, y)[:blue]
+        dg = a.getRGB(x, y)[:green] - b.getRGB(x, y)[:green]
+        mse = dr ** 2 + db ** 2 + dg ** 2
+      end
+    end
+    mse /= 3 * a.width * a.height
+  end
+  def isGriddable(pertitions)
+    numW = pertitions[:width].to_i
+    numH = pertitions[:height].to_i
+    a = self
+
+    unless a.width % numW == 0 and a.height % numH == 0
+      p "grid number ... ng"
+      p "a.width is #{a.width}, parseNum is #{numW}"
+      p "a.height is #{a.height}, parseNum is #{numH}"
+      return false
+    end
+    p "grid number ... ok"
+    return true
+  end
+  def gridize(pertitions)
+    numW = pertitions[:width].to_i
+    numH = pertitions[:height].to_i
+    a = self
+    perWidth = a.width / numW
+    perHeight = a.height / numH
+
+    results = []
+    for x in 0...(numW)
+      for y in 0...(numH)
+        posX = x * perWidth
+        posY = y * perHeight
+        mat = a.sub_rect posX, posY, perWidth, perHeight
+        result = {
+          x: posX,
+          y: posY,
+          mat: mat
+        }
+        results.push result
+      end
+    end
+    return results
+  end
 end

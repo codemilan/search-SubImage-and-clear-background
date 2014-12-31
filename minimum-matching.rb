@@ -19,21 +19,14 @@ result_image = "result.png"
 # メイン処理
 # -------------------------------------
 
-# read constructed image
-reconstructer = OpenCV::CvMat.load(a_image)
-# read target image
-rough = OpenCV::CvMat.load(b_image)
-if reconstructer.isValidAndSmallerThan rough
-  # search b-coodinates
-  place = reconstructer.placesAt rough
-  # read black constructed image
-  preboundary = OpenCV::CvMat.load(d_image)
-  if preboundary.isTheSameSizeOf reconstructer
-    # b から a に相当する部分を切り取る。
-    clipped = rough.sub_rect place[:x], place[:y], reconstructer.width, reconstructer.height
-    # 画像足し算をする。
-    view = preboundary + clipped
-    # 保存
+reconstructedImage = OpenCV::CvMat.load(a_image)
+roughImage = OpenCV::CvMat.load(b_image)
+if reconstructedImage.isValidAndSmallerThan roughImage
+  place = reconstructedImage.placesAt roughImage
+  blackShadow = OpenCV::CvMat.load(d_image)
+  if blackShadow.isTheSameSizeOf reconstructedImage
+    clipped = roughImage.sub_rect place[:x], place[:y], reconstructedImage.width, reconstructedImage.height
+    view = blackShadow + clipped
     view.save_image result_image
     puts "This result image has been saved at #{result_image}"
   end
