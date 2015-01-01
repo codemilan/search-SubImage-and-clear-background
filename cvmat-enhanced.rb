@@ -1,13 +1,19 @@
 require "opencv"
 
-# -------------------------------------
-#  拡張
-# -------------------------------------
-
+def progress_bar(i, max = 100)
+  i = i.to_f
+  max = max.to_f
+  i = max if i > max
+  percent = i / max * 100.0
+  rest_size = 1 + 5 + 1 # space + progress_num + %
+  bar_size = 79 - rest_size # (width - 1) - rest_size
+  bar_str = '%-*s' % [bar_size, ('#' * (percent * bar_size / 100).to_i)]
+  progress_num = '%3.1f' % percent
+  print "\r#{bar_str} #{'%5s' % progress_num}%"
+end
 
 class OpenCV::CvMat
-  # ピクセルを入力すると、その位置の rgb をハッシュで返す。
-  def getRGB(x, y)
+  def get_rgb(x, y)
     blue, green, red = self.at(y - 1, x - 1).to_a
     return {
       blue: blue,
@@ -15,12 +21,12 @@ class OpenCV::CvMat
       red: red
     }
   end
-  # ピクセルを入力すると、その位置が 白 かどうか判定する。
-  def isWhite(x, y)
+
+  def white?(x, y)
     blue, green, red = self.at(y - 1, x - 1).to_a
     [blue, green, red] == [255.0, 255.0, 255.0]
   end
-  # isValidAndSmallerThan かどうか判定する。
+
   def isValidAndSmallerThan(image)
     a = self
     b = image
@@ -39,6 +45,7 @@ class OpenCV::CvMat
     end
     return true
   end
+
   def getDegreeOfDiff(image)
     a = self
     b = image
@@ -47,23 +54,25 @@ class OpenCV::CvMat
 
     for x in 1..(a.width)
       for y in 1..(a.height)
-        error += (a.getRGB(x, y)[:green] - b.getRGB(x, y)[:green]).abs ** 2
+        error += (a.get_rgb(x, y)[:green] - b.get_rgb(x, y)[:green]).abs ** 2
       end
     end
 
     return error
   end
-  # 画像がどの位置に存在していそうかを計算する。
+
   def placesAt(bigImage)
     a = self
     b = bigImage
 
     searchWidth = b.width - a.width + 1
     searchHeight = b.height - a.height + 1
+    num_try = (searchHeight) * (searchWidth)
 
     results = []
-    for x in 0...searchWidth
-      for y in 0...searchHeight
+    counts = 0
+    (0...searchWidth).each do |x|
+      (0...searchHeight).each do |y|
         target = b.sub_rect x, y, a.width, a.height
         diff = a.getDegreeOfDiff target
         results.push result = {
@@ -71,12 +80,16 @@ class OpenCV::CvMat
           y: y,
           diff: diff
         }
+        counts += 1
+        progress_bar counts, num_try
       end
     end
+    print "\n"
     results.min_by do |result|
       result[:diff]
     end
   end
+
   def isTheSameSizeOf(image)
     a = self
     d = image
@@ -88,6 +101,7 @@ class OpenCV::CvMat
       return false
     end
   end
+
   def calcMSE_color(theSameSizeImage)
     a = self
     b = theSameSizeImage
@@ -95,15 +109,16 @@ class OpenCV::CvMat
     mse = 0
     for x in 1..(a.width)
       for y in 1..(a.height)
-        dr = a.getRGB(x, y)[:red] - b.getRGB(x, y)[:red]
-        db = a.getRGB(x, y)[:blue] - b.getRGB(x, y)[:blue]
-        dg = a.getRGB(x, y)[:green] - b.getRGB(x, y)[:green]
+        dr = a.get_rgb(x, y)[:red] - b.get_rgb(x, y)[:red]
+        db = a.get_rgb(x, y)[:blue] - b.get_rgb(x, y)[:blue]
+        dg = a.get_rgb(x, y)[:green] - b.get_rgb(x, y)[:green]
         mse = dr ** 2 + db ** 2 + dg ** 2
       end
     end
     mse /= 3 * a.width * a.height
   end
-  def isGriddable(pertitions)
+
+  def griddable?(pertitions)
     numW = pertitions[:width].to_i
     numH = pertitions[:height].to_i
     a = self
@@ -117,6 +132,7 @@ class OpenCV::CvMat
     p "grid number ... ok"
     return true
   end
+
   def gridize(pertitions)
     numW = pertitions[:width].to_i
     numH = pertitions[:height].to_i

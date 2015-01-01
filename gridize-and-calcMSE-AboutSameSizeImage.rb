@@ -24,7 +24,7 @@ unless a_Mat.isTheSameSizeOf b_Mat
   p "同じ画像を指定してください。"
   return false
 end
-if a_Mat.isGriddable numberOfPertitions
+if a_Mat.griddable? numberOfPertitions
   gridedImagesA = a_Mat.gridize numberOfPertitions
   gridedImagesB = b_Mat.gridize numberOfPertitions
   results = []
