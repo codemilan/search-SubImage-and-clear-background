@@ -49,14 +49,26 @@ class OpenCV::CvMat
   def getDegreeOfDiff(image)
     a = self
     b = image
-
+    c = a.abs_diff b
+    ########################################
+    # new method
+    ########################################
     error = 0
-
-    for x in 1..(a.width)
-      for y in 1..(a.height)
-        error += (a.get_rgb(x, y)[:green] - b.get_rgb(x, y)[:green]).abs ** 2
-      end
+    error = c.split.inject(0) do |sum, c_parsed|
+      multipled = c_parsed.mul c_parsed
+      sum + multipled.sum.to_ary[0]
     end
+    ########################################
+    # old method
+    ########################################
+    # error = 0
+    # try_x = a.width.to_i
+    # try_y = a.height.to_i
+    # (1..try_x).each do |x|
+    #   (1..try_y).each do |y|
+    #     error += (c.get_rgb(x, y)[:green]).abs ** 2
+    #   end
+    # end
 
     return error
   end
@@ -68,12 +80,14 @@ class OpenCV::CvMat
     searchWidth = b.width - a.width + 1
     searchHeight = b.height - a.height + 1
     num_try = (searchHeight) * (searchWidth)
+    sub_rect_width = a.width
+    sub_rect_height = a.height
 
     results = []
     counts = 0
     (0...searchWidth).each do |x|
       (0...searchHeight).each do |y|
-        target = b.sub_rect x, y, a.width, a.height
+        target = b.sub_rect x, y, sub_rect_width, sub_rect_height
         diff = a.getDegreeOfDiff target
         results.push result = {
           x: x,
