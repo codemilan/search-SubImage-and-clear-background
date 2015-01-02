@@ -15,8 +15,8 @@ require "./cvmat-enhanced.rb"
 a_image = "./samples/paintLittle.jpg"
 b_image = "./samples/result.png"
 pertition = {
-  width: 3,
-  height: 3
+  width: 7,
+  height: 7
 }
 # 強制実行
 forceful = true
@@ -59,6 +59,6 @@ if a_Mat.griddable? pertition
       mse: mse
     }
   end
-  puts results
+  puts results.sort_by {|result| result[:mse]}
 end
 
