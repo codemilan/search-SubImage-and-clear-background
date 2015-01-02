@@ -27,47 +27,43 @@ class OpenCV::CvMat
     [blue, green, red] == [255.0, 255.0, 255.0]
   end
 
-  def isValidAndSmallerThan(image)
+  def smallerThan?(image)
     a = self
     b = image
 
-    unless a.height or b.height or a.width or b.width
-      p "a, b に妥当な画像を指定してください。"
+    return false unless a.valid? or b.valid?
+    if a.height < b.height and a.width < b.width
+      return true
+    else
       return false
     end
-    if a.height > b.height and a.width > b.width
-      p "大きな b 画像を指定してください。"
-      return false
-    end
-    if (a.width - b.width) * (a.height - b.height) < 0
-      p "十分に大きな b 画像を指定してください。"
-      return false
-    end
-    return true
   end
 
-  def getDegreeOfDiff(image)
+  def valid?
     a = self
-    b = image
+    if a.height * a.width > 0
+      return true
+    else
+      return false
+    end
+  end
+
+  def calculate_degree_of_diff(same_size_image)
+    a = self
+    b = same_size_image
     c = a.abs_diff b
     ########################################
-    # new method
+    # 緑単色
     ########################################
-    error = 0
-    error = c.split.inject(0) do |sum, c_parsed|
-      multipled = c_parsed.mul c_parsed
-      sum + multipled.sum.to_ary[0]
-    end
+    blue, green, red = c.split
+    multipled = green.mul green
+    error = multipled.sum.to_ary[0]
     ########################################
-    # old method
+    # 全色
     ########################################
-    # error = 0
-    # try_x = a.width.to_i
-    # try_y = a.height.to_i
-    # (1..try_x).each do |x|
-    #   (1..try_y).each do |y|
-    #     error += (c.get_rgb(x, y)[:green]).abs ** 2
-    #   end
+    # error = c.split.inject(0) do |sum, c_parsed|
+    #   multipled = c_parsed.mul c_parsed
+    #   sum + multipled.sum.to_ary[0]
     # end
 
     return error
@@ -77,18 +73,18 @@ class OpenCV::CvMat
     a = self
     b = bigImage
 
-    searchWidth = b.width - a.width + 1
-    searchHeight = b.height - a.height + 1
-    num_try = (searchHeight) * (searchWidth)
+    search_width = b.width - a.width + 1
+    search_height = b.height - a.height + 1
+    num_try = (search_height) * (search_width)
     sub_rect_width = a.width
     sub_rect_height = a.height
 
     results = []
     counts = 0
-    (0...searchWidth).each do |x|
-      (0...searchHeight).each do |y|
+    (0...search_width).each do |x|
+      (0...search_height).each do |y|
         target = b.sub_rect x, y, sub_rect_width, sub_rect_height
-        diff = a.getDegreeOfDiff target
+        diff = a.calculate_degree_of_diff target
         results.push result = {
           x: x,
           y: y,
@@ -104,7 +100,7 @@ class OpenCV::CvMat
     end
   end
 
-  def isTheSameSizeOf(image)
+  def has_identical_size?(image)
     a = self
     d = image
 
@@ -116,53 +112,50 @@ class OpenCV::CvMat
     end
   end
 
-  def calcMSE_color(theSameSizeImage)
+  def calculate_MSE(same_size_image)
     a = self
-    b = theSameSizeImage
+    b = same_size_image
+    c = a.abs_diff b
 
-    mse = 0
-    for x in 1..(a.width)
-      for y in 1..(a.height)
-        dr = a.get_rgb(x, y)[:red] - b.get_rgb(x, y)[:red]
-        db = a.get_rgb(x, y)[:blue] - b.get_rgb(x, y)[:blue]
-        dg = a.get_rgb(x, y)[:green] - b.get_rgb(x, y)[:green]
-        mse = dr ** 2 + db ** 2 + dg ** 2
-      end
+    mse = c.split.inject(0) do |sum, c_parsed|
+      multipled = c_parsed.mul c_parsed
+      sum + multipled.sum.to_ary[0]
     end
+
     mse /= 3 * a.width * a.height
   end
 
   def griddable?(pertitions)
-    numW = pertitions[:width].to_i
-    numH = pertitions[:height].to_i
+    num_w = pertitions[:width].to_i
+    num_h = pertitions[:height].to_i
     a = self
 
-    unless a.width % numW == 0 and a.height % numH == 0
+    unless a.width % num_w == 0 and a.height % num_h == 0
       p "grid number ... ng"
-      p "a.width is #{a.width}, parseNum is #{numW}"
-      p "a.height is #{a.height}, parseNum is #{numH}"
+      p "a.width is #{a.width}, parseNum is #{num_w}"
+      p "a.height is #{a.height}, parseNum is #{num_h}"
       return false
     end
     p "grid number ... ok"
     return true
   end
 
-  def gridize(pertitions)
-    numW = pertitions[:width].to_i
-    numH = pertitions[:height].to_i
+  def gridize(pertition)
+    num_w = pertition[:width].to_i
+    num_h = pertition[:height].to_i
     a = self
-    perWidth = a.width / numW
-    perHeight = a.height / numH
+    per_width = a.width / num_w
+    per_height = a.height / num_h
 
     results = []
-    for x in 0...(numW)
-      for y in 0...(numH)
-        posX = x * perWidth
-        posY = y * perHeight
-        mat = a.sub_rect posX, posY, perWidth, perHeight
+    (0...(num_w)).each do |x|
+      (0...(num_h)).each do |y|
+        pos_x = x * per_width
+        pos_y = y * per_height
+        mat = a.sub_rect pos_x, pos_y, per_width, per_height
         result = {
-          x: posX,
-          y: posY,
+          x: pos_x,
+          y: pos_y,
           mat: mat
         }
         results.push result

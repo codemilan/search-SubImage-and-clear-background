@@ -13,23 +13,24 @@ require "./cvmat-enhanced.rb"
 #  Configuration
 # -------------------------------------
 
-a_image = "paintLittle.jpg"
-b_image = "paintBig.jpg"
-d_image = "paintLittle-th.jpg"
-result_image = "result.png"
+a_image = "./samples/paintLittle.jpg"
+b_image = "./samples/paintBig.jpg"
+d_image = "./samples/paintLittle-th.jpg"
+result_image = "./samples/result.png"
 
 # -------------------------------------
 # メイン処理
 # -------------------------------------
 
-reconstructedImage = OpenCV::CvMat.load(a_image)
-roughImage = OpenCV::CvMat.load(b_image)
-if reconstructedImage.isValidAndSmallerThan roughImage
-  place = reconstructedImage.placesAt roughImage
-  blackShadow = OpenCV::CvMat.load(d_image)
-  if blackShadow.isTheSameSizeOf reconstructedImage
-    clipped = roughImage.sub_rect place[:x], place[:y], reconstructedImage.width, reconstructedImage.height
-    view = blackShadow + clipped
+reconstructed = OpenCV::CvMat.load(a_image)
+rough = OpenCV::CvMat.load(b_image)
+
+if reconstructed.smallerThan? rough
+  place = reconstructed.placesAt rough
+  black_shadow = OpenCV::CvMat.load(d_image)
+  if black_shadow.has_identical_size? reconstructed
+    clipped = rough.sub_rect place[:x], place[:y], reconstructed.width, reconstructed.height
+    view = black_shadow + clipped
     view.save_image result_image
     puts "This result image has been saved at #{result_image}"
   end

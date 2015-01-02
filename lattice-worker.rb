@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
 require "opencv"
 require "./cvmat-enhanced.rb"
 
@@ -8,33 +11,34 @@ require "./cvmat-enhanced.rb"
 #  Configuration
 # -------------------------------------
 
-a_image = "paintLittle.jpg"
-b_image = "result.png"
-numberOfPertitions = {
+a_image = "./samples/paintLittle.jpg"
+b_image = "./samples/result.png"
+pertition = {
   width: 1,
   height: 2
 }
+
 # -------------------------------------
 # メイン処理
 # -------------------------------------
 
 a_Mat = OpenCV::CvMat.load a_image
 b_Mat = OpenCV::CvMat.load b_image
-unless a_Mat.isTheSameSizeOf b_Mat
+unless a_Mat.has_identical_size? b_Mat
   p "同じ画像を指定してください。"
   return false
 end
-if a_Mat.griddable? numberOfPertitions
-  gridedImagesA = a_Mat.gridize numberOfPertitions
-  gridedImagesB = b_Mat.gridize numberOfPertitions
+if a_Mat.griddable? pertition
+  a_grids = a_Mat.gridize pertition
+  b_grids = b_Mat.gridize pertition
   results = []
-  for i in 0...(gridedImagesA.length)
-    gridA = gridedImagesA[i][:mat]
-    gridB = gridedImagesB[i][:mat]
-    mse = gridA.calcMSE_color gridB
+  (0...(a_grids.length)).each do |i|
+    gridA = a_grids[i][:mat]
+    gridB = b_grids[i][:mat]
+    mse = gridA.calculate_MSE gridB
     results.push result = {
-      x: gridedImagesA[i][:x],
-      y: gridedImagesA[i][:y],
+      x: a_grids[i][:x],
+      y: a_grids[i][:y],
       width: gridA.width,
       height: gridB.height,
       mse: mse
