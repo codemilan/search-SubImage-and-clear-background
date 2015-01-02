@@ -25,7 +25,7 @@ result_image = "./samples/result.png"
 reconstructed = OpenCV::CvMat.load(a_image)
 rough = OpenCV::CvMat.load(b_image)
 
-if reconstructed.smallerThan? rough
+if reconstructed.smaller_than? rough
   place = reconstructed.placesAt rough
   black_shadow = OpenCV::CvMat.load(d_image)
   if black_shadow.has_identical_size? reconstructed

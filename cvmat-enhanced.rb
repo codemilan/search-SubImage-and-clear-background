@@ -27,7 +27,7 @@ class OpenCV::CvMat
     [blue, green, red] == [255.0, 255.0, 255.0]
   end
 
-  def smallerThan?(image)
+  def smaller_than?(image)
     a = self
     b = image
 
@@ -125,9 +125,22 @@ class OpenCV::CvMat
     mse /= 3 * a.width * a.height
   end
 
-  def griddable?(pertitions)
-    num_w = pertitions[:width].to_i
-    num_h = pertitions[:height].to_i
+  def idealize(pertition)
+    a = self
+    num_w = pertition[:width].to_i
+    num_h = pertition[:height].to_i
+
+    error_w = a.width % num_w
+    error_h = a.height % num_h
+    p "idealize width -#{error_w}"
+    p "idealize height -#{error_h}"
+
+    return a.sub_rect 0, 0, a.width - error_w, a.height - error_h
+  end
+
+  def griddable?(pertition)
+    num_w = pertition[:width].to_i
+    num_h = pertition[:height].to_i
     a = self
 
     unless a.width % num_w == 0 and a.height % num_h == 0
