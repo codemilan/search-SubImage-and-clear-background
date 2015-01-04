@@ -26,9 +26,9 @@ reconstructed = OpenCV::CvMat.load(a_image)
 rough = OpenCV::CvMat.load(b_image)
 
 if reconstructed.smaller_than? rough
-  place = reconstructed.placesAt rough
   black_shadow = OpenCV::CvMat.load(d_image)
   if black_shadow.has_identical_size? reconstructed
+    place = reconstructed.placesAt rough
     clipped = rough.sub_rect place[:x], place[:y], reconstructed.width, reconstructed.height
     view = black_shadow + clipped
     view.save_image result_image
