@@ -120,7 +120,7 @@ points1.zip(points2) { |pt1, pt2|
 # puts logger
 scales = []
 
-(1..1000).each do
+(1..100000).each do
   log1, log2 = logger.sample(2)
   da22 = (log1[:ax] - log2[:ax]) ** 2 + (log1[:ay] - log2[:ay]) ** 2
   db22 = (log1[:bx] - log2[:bx]) ** 2 + (log1[:by] - log2[:by]) ** 2
@@ -131,6 +131,17 @@ scales = []
   scales.push scale
 end
 
+
+lows = scales.count do |scale|
+  scale < 20
+end
+middles = scales.count do |scale|
+  20 < scale and scale < 100
+end
+highs = scales.count do |scale|
+  100 < scale
+end
+p "低すぎ#{lows}ほどほど#{middles}高すぎ#{highs}"
 percentage = scales.inject(0.0){ |r,i| r += i } / scales.size
 p "倍率は 約#{percentage}％の比率です。"
 
