@@ -120,13 +120,13 @@ points1.zip(points2) { |pt1, pt2|
 # puts logger
 scales = []
 
-(1..100000).each do
+(1..10).each do
   log1, log2 = logger.sample(2)
   da22 = (log1[:ax] - log2[:ax]) ** 2 + (log1[:ay] - log2[:ay]) ** 2
   db22 = (log1[:bx] - log2[:bx]) ** 2 + (log1[:by] - log2[:by]) ** 2
   len_a = Math.sqrt(da22)
   len_b = Math.sqrt(db22)
-  # p "倍率 #{len_b / len_a * 100} ％"
+  p "倍率 #{len_b / len_a * 100} ％"
   scale = len_b / len_a * 100
   scales.push scale
 end
