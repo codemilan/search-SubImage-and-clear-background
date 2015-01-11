@@ -2,14 +2,10 @@
 # coding: utf-8
 
 require "opencv"
-require "optparse"
 require "./cvmat-enhanced.rb"
 
 # 同じ大きさの２つの画像を、グリッド化する。
 # グリッド化された画像同士を比較して、MSE value を算出する。
-# todo
-#   grid 画像の生成
-    # + mse 表示
 
 # -------------------------------------
 #  Configuration
@@ -17,16 +13,17 @@ require "./cvmat-enhanced.rb"
 
 a_image = "./samples/paintLittle.jpg"
 b_image = "./samples/result.png"
-# 結果保存先
-error_result_image = "./samples/error_result.png"
+# mse 最大グリッドを描いて出力する。
+output_error = "./samples/error_result.png"
 config = {
   pertition: {
     width: 2,
     height: 2,
+    # pertition を無視して、特定長の正方形でグリッド化するとき true, デフォルトは false
     regular_square: false,
     square_px: 3,
   },
-  # 厳密な pertition を指定せずに強制実行
+  # 厳密な pertition を指定せずに強制実行するとき true、デフォルトは false
   idealization: true,
   idealization_config: {
     # 右詰め
@@ -55,7 +52,6 @@ if config[:idealization]
   b_Mat = b_Mat.idealize config
 end
 
-
 if a_Mat.griddable? config
   a_grids = a_Mat.gridize config
   b_grids = b_Mat.gridize config
@@ -76,10 +72,11 @@ if a_Mat.griddable? config
     results.push result
   end
   puts results.sort_by {|result| result[:mse]}
+  # error grid draw
   error_field = results[-1]
   p0 = OpenCV::CvPoint.new(error_field[:x], error_field[:y])
   p1 = OpenCV::CvPoint.new(error_field[:x] + error_field[:width] - 1, error_field[:y] + error_field[:height] - 1)
   error_result = b_Mat.rectangle p0, p1
-  error_result.save error_result_image
+  error_result.save output_error
 end
 

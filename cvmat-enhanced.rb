@@ -41,8 +41,8 @@ class OpenCV::CvMat
     c = a.abs_diff b
 
     mse = c.split.inject(0) do |sum, c_parsed|
-      multipled = c_parsed.mul c_parsed
-      sum + multipled.sum.to_ary[0]
+      multipled = c_parsed.mul c_parsed # dr ^2 or dg ^ 2 or db ^ 2
+      sum + multipled.sum.to_ary[0] # 和を取る。
     end
 
     mse /= 3 * a.width * a.height
